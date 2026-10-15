@@ -4,7 +4,6 @@ using GolBet.Entities;
 using GolBet.Entities.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace GolBet.Repositories.Data;
 public static class DbSeeder

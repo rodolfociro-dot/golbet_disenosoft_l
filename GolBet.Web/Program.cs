@@ -8,6 +8,7 @@ using GolBet.Services.Mapping;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
+
 using static System.Formats.Asn1.AsnWriter;
 
 var culture = new CultureInfo("es-CO");
@@ -63,6 +64,7 @@ builder.Services.AddScoped<IMatchService, MatchService>();
 var app = builder.Build();
 
 // Seed the database on startup 
+using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -82,6 +84,7 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();   // who are you?  (reads the cookie, builds User) 
 app.UseAuthorization();    // may you do this?  (evaluates [Authorize]) 
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

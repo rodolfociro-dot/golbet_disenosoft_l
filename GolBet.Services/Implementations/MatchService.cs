@@ -7,6 +7,8 @@ using GolBet.Repositories.Interfaces;
 using GolBet.Services.DTOs;
 using GolBet.Services.Helpers;
 using GolBet.Services.Interfaces;
+using System.Globalization;
+using System.Text;
 
 namespace GolBet.Services.Implementations;
 
@@ -21,12 +23,36 @@ public class MatchService : IMatchService
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status = null)
+    public async Task<IEnumerable<MatchDto>> GetBoardAsync(MatchStatus? status, string? search = null)
     {
         var matches = await _matchRepository.GetAllWithTeamsAsync(status);
-        return _mapper.Map<IEnumerable<MatchDto>>(matches);
-    }
+        var dtos = _mapper.Map<IEnumerable<MatchDto>>(matches);
 
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = Normalize(search.Trim());
+            dtos = dtos.Where(m =>
+                Normalize(m.HomeTeamName).Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                Normalize(m.AwayTeamName).Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return dtos;
+    }
+    private static string Normalize(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+
+        var decomposed = text.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (var c in decomposed)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                sb.Append(c);
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC);
+    }
     public async Task<MatchDetailDto?> GetDetailAsync(int id)
     {
         var match = await _matchRepository.GetByIdWithDetailsAsync(id);
@@ -44,7 +70,7 @@ public class MatchService : IMatchService
         return dto;
 
     }
-        public async Task CreateAsync(MatchFormDto dto)
+    public async Task CreateAsync(MatchFormDto dto)
 
     {
         ValidateBusinessRules(dto);
@@ -53,7 +79,7 @@ public class MatchService : IMatchService
         await _matchRepository.AddAsync(match);
 
     }
-        public async Task UpdateAsync(MatchFormDto dto)
+    public async Task UpdateAsync(MatchFormDto dto)
 
     {
 

@@ -145,16 +145,10 @@ public class BetService : IBetService
             Status = BetStatus.Pending
         };
 
-
-
         await _betRepository.AddAsync(bet);   // SaveChangesAsync happens here 
-
     }
-
-
 
     public async Task<IEnumerable<BetDto>> GetMyBetsAsync(string userId)
 
         => _mapper.Map<IEnumerable<BetDto>>(await _betRepository.GetByUserAsync(userId));
-
 }
